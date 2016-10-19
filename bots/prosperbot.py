@@ -33,3 +33,6 @@ async def on_ready():
 @bot.command(pass_context=True)
 async def quote(ctx):
     await bot.say(ctx)
+
+
+bot.run(CONFIG.get('OAUTH', 'bot_token'))
