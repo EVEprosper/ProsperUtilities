@@ -66,7 +66,13 @@ async def on_ready():
 
 @bot.command(pass_context=True)
 async def quote(ctx, symbol:str):
-    await bot.say(symbol)
+    try:
+        data = get_stock_data(symbol)
+    except Exception as err_message:
+        logger.warning('Invalid stock ticker: ' + symbol)
+        await bot.say('Unable to resolve stock ticker: ' + symbol)
+
+    await bot.say(get_company_name(symbol))
 
 @bot.command(pass_context=True)
 async def echo(ctx):
