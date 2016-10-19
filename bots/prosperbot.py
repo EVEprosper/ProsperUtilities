@@ -2,7 +2,7 @@
 from os import path
 from datetime import datetime, timedelta
 
-import pandas_datareader.web
+import pandas_datareader.data as web
 import discord
 from discord.ext import commands
 
@@ -32,7 +32,7 @@ async def on_ready():
 
 @bot.command(pass_context=True)
 async def quote(ctx):
-    await bot.say(ctx)
+    await bot.say('echo: {0}'.format(ctx.message.content))
 
-
-bot.run(CONFIG.get('OAUTH', 'bot_token'))
+BOT_TOKEN = CONFIG.get('OAUTH', 'bot_token')
+bot.run(BOT_TOKEN)
