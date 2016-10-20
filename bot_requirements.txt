@@ -1,9 +1,14 @@
+aiohttp==1.0.5
+async-timeout==1.0.0
+chardet==2.3.0
 click==6.6
+discord.py==0.13.0
 Flask==0.11.1
 Flask-OAuthlib==0.9.3
 itsdangerous==0.24
 Jinja2==2.8
 MarkupSafe==0.23
+multidict==2.1.2
 numpy==1.11.2
 oauthlib==2.0.0
 pandas==0.19.0
@@ -15,4 +20,5 @@ requests==2.11.1
 requests-file==1.4.1
 requests-oauthlib==0.7.0
 six==1.10.0
+websockets==3.2
 Werkzeug==0.11.11
