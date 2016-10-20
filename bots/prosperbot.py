@@ -1,5 +1,5 @@
 '''prosperbot.py: bot for prosper stuff'''
-from os import path
+from os import path, makedirs
 from datetime import datetime, timedelta
 
 #import requests
@@ -7,6 +7,8 @@ import pandas as pd
 import pandas_datareader.data as web
 import discord
 from discord.ext import commands
+from tinydb import TinyDB, Query
+import ujson as json
 
 from prosper.common.prosper_logging import create_logger
 from prosper.common.prosper_config import get_config
@@ -20,22 +22,86 @@ LOGGER = create_logger(
     CONFIG,
     'DEBUG'
 )
+CACHE_ABSPATH = path.join(HERE, CONFIG.get('CACHE', 'cache_path'))
+if not path.exists(CACHE_ABSPATH):
+    makedirs(CACHE_ABSPATH)
+def update_cache(db, insertobj, query_field):
+    '''single func for updating tinydb cache'''
+    u_query = Query()
+    try:
+        db.remove(u_query.ticker == query_field) #TODO: make this more dynamic
+        db.insert(insertobj)
+    except Exception as err_message:
+        LOGGER.error(
+            'EXCEPTION: unable to update tinydb ' +
+            '\r\texception={0}'.format(err_message) +
+            '\r\tinsertobj={0}'.format(insertobj) +
+            '\r\tquery_field={0}'.format(query_field)
+        )
+
+COMPANY_CACHE_TIME = int(CONFIG.get('CACHE', 'company_cache_time')) * 3600 #seconds
+COMPANY_CACHE_FILE = path.join(CACHE_ABSPATH, CONFIG.get('CACHE', 'company_cache_file'))
+COMPANY_DB = TinyDB(COMPANY_CACHE_FILE)
+def check_company_cache(ticker, company_cache_time=COMPANY_CACHE_TIME):
+    '''check to see if we already know what the name is'''
+    #TODO: tinyDB records
+    LOGGER.info('checking tinydb for ' + ticker)
+    now = datetime.now()
+    c_query = Query()
+    record = COMPANY_DB.search(c_query.ticker == ticker)
+    if record:
+        company_info = record[0]
+        LOGGER.debug(company_info)
+        LOGGER.info('--record found')
+        cache_time = datetime.strptime(company_info['cache_time'], '%Y-%m-%d %H:%M:%S')
+        company_name = company_info['company_name']
+        record_age = now - cache_time
+
+        if record_age.total_seconds() > COMPANY_CACHE_TIME:
+            LOGGER.info('--cache too old, refreshing record')
+            return None
+        else:
+            LOGGER.info('--company name found in cache: ' + company_name)
+            return company_name
+    else:
+        LOGGER.info('ticker not found in cache: ' + ticker)
+        return None
+
+def update_company_cache(ticker, company_name):
+    '''push updates to cache for later'''
+    if company_name == 'N/A':
+        return
+    now = datetime.now()
+    now_str = now.strftime('%Y-%m-%d %H:%M:%S')
+    insertobj = {
+        'ticker':ticker,
+        'company_name':company_name,
+        'cache_time':now_str
+    }
+    LOGGER.info('pushing update to company_cache')
+    update_cache(COMPANY_DB, insertobj, ticker)
+
 
 TICKER_FORMAT = CONFIG.get('PD_DATAREADER', 'ticker_format')
 TICKER_LOOKUP = CONFIG.get('PD_DATAREADER', 'ticker_lookup')
 def get_company_name(ticker, ticker_format=TICKER_FORMAT):
     '''Resolve TICKER->company name for easy readability'''
+    ticker = ticker.upper()
     cached_name = check_company_cache(ticker)
     if cached_name:
         return cached_name
 
+    LOGGER.info('fetching ticker from internet: ' + ticker)
     ticker_url = '{base_url}?s={ticker}&f={ticker_format}'.format(
         base_url=TICKER_LOOKUP,
         ticker=ticker,
         ticker_format=ticker_format
     )
+    LOGGER.debug('URL:' + ticker_url)
     ticker_data = pd.read_csv(ticker_url)
-    return ticker_data.columns.values[0] #only fetch one company name
+    company_name = ticker_data.columns.values[0] #only fetch one company name
+    update_company_cache(ticker, company_name)
+    return company_name
 
 QUOTE_SOURCE = CONFIG.get('PD_DATAREADER', 'quote_source')
 DATERANGE = CONFIG.get('PD_DATAREADER', 'DATERANGE')
@@ -70,12 +136,6 @@ def get_plot(ticker, filepath=None, chart_cache_time=CHART_CACHE_TIME):
     #TODO: tinyDB records of plots on file
     return None
 
-COMPANY_CACHE_TIME = None #TODO CONFIG.get()
-def check_company_cache(ticker, company_cache_time=COMPANY_CACHE_TIME):
-    '''check to see if we already know what the name is'''
-    #TODO: tinyDB records
-    return None
-
 bot = commands.Bot(
     command_prefix=CONFIG.get('OAUTH', 'bot_prefix'),
     description='ProsperBot is BESTBOT'
@@ -107,12 +167,17 @@ async def quote(ctx, symbol:str):
 @bot.command()
 async def who(symbol:str):
     '''!who [TICKER] returns company name'''
+    lookup_start = datetime.now()
     company_name = get_company_name(symbol)
-
+    lookup_elapsed = datetime.now() - lookup_start
     if company_name == 'N/A':
-        await bot.say('Unable to resolve stock ticker: ' + symbol)
+        await bot.say('Unable to resolve stock ticker: ' + symbol +
+            '\truntime=' + str(lookup_elapsed)
+        )
     else:
-        await bot.say(company_name)
+        await bot.say(company_name +
+            '\truntime=' + str(lookup_elapsed)
+        )
 
 @bot.command(pass_context=True)
 async def echo(ctx):
