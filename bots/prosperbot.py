@@ -165,11 +165,15 @@ async def quote(ctx, symbol:str):
     await bot.say(get_company_name(symbol)) #TODO: get_company_name moved into plotting func
 
 @bot.command()
-async def who(symbol:str):
+async def who(symbol:str, cache_override:str):
     '''!who [TICKER] returns company name'''
+    cache_override_bool = False
+    if cache_override.lower() == 'please':
+        cache_override_bool = True
     lookup_start = datetime.now()
-    company_name = get_company_name(symbol)
+    company_name = get_company_name(symbol, cache_override_bool)
     lookup_elapsed = datetime.now() - lookup_start
+
     if company_name == 'N/A':
         await bot.say('Unable to resolve stock ticker: ' + symbol +
             '\truntime=' + str(lookup_elapsed)
