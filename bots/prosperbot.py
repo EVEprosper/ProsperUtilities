@@ -25,6 +25,10 @@ TICKER_FORMAT = CONFIG.get('PD_DATAREADER', 'ticker_format')
 TICKER_LOOKUP = CONFIG.get('PD_DATAREADER', 'ticker_lookup')
 def get_company_name(ticker, ticker_format=TICKER_FORMAT):
     '''Resolve TICKER->company name for easy readability'''
+    cached_name = check_company_cache(symbol)
+    if cached_name:
+        return cached_name
+
     ticker_url = '{base_url}?s={ticker}&f={ticker_format}'.format(
         base_url=TICKER_LOOKUP,
         ticker=ticker,
@@ -103,11 +107,7 @@ async def quote(ctx, symbol:str):
 @bot.command()
 async def who(symbol:str):
     '''!who [TICKER] returns company name'''
-    cached_name = check_company_cache(symbol)
-    if cached_name:
-        company_name = cached_name
-    else:
-        company_name = get_company_name(symbol)
+    company_name = get_company_name(symbol)
 
     if company_name == 'N/A':
         await bot.say('Unable to resolve stock ticker: ' + symbol)
