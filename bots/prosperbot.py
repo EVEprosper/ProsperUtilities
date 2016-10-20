@@ -25,7 +25,7 @@ TICKER_FORMAT = CONFIG.get('PD_DATAREADER', 'ticker_format')
 TICKER_LOOKUP = CONFIG.get('PD_DATAREADER', 'ticker_lookup')
 def get_company_name(ticker, ticker_format=TICKER_FORMAT):
     '''Resolve TICKER->company name for easy readability'''
-    cached_name = check_company_cache(symbol)
+    cached_name = check_company_cache(ticker)
     if cached_name:
         return cached_name
 
