@@ -84,11 +84,11 @@ def update_company_cache(ticker, company_name):
 
 TICKER_FORMAT = CONFIG.get('PD_DATAREADER', 'ticker_format')
 TICKER_LOOKUP = CONFIG.get('PD_DATAREADER', 'ticker_lookup')
-def get_company_name(ticker, ticker_format=TICKER_FORMAT):
+def get_company_name(ticker, cache_override=False, ticker_format=TICKER_FORMAT):
     '''Resolve TICKER->company name for easy readability'''
     ticker = ticker.upper()
     cached_name = check_company_cache(ticker)
-    if cached_name:
+    if cached_name and not cache_override:
         return cached_name
 
     LOGGER.info('fetching ticker from internet: ' + ticker)
