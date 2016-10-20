@@ -60,10 +60,16 @@ def make_plot(data, ticker, filepath, png_height=PNG_HEIGHT, png_width=PNG_WIDTH
     '''make a plot of the OHLC data'''
     company_name = get_company_name(ticker)
     pass
-
-def get_plot(ticker, filepath=None):
+CHART_CACHE_TIME = None
+def get_plot(ticker, filepath=None, chart_cache_time=CHART_CACHE_TIME):
     '''check to see if file is already generated'''
     #TODO: tinyDB records of plots on file
+    return None
+
+COMPANY_CACHE_TIME = None #TODO CONFIG.get()
+def check_company_cache(ticker, company_cache_time=COMPANY_CACHE_TIME):
+    '''check to see if we already know what the name is'''
+    #TODO: tinyDB records
     return None
 
 bot = commands.Bot(
@@ -93,6 +99,20 @@ async def quote(ctx, symbol:str):
 
 
     await bot.say(get_company_name(symbol)) #TODO: get_company_name moved into plotting func
+
+@bot.command()
+async def who(symbol:str):
+    '''!who [TICKER] returns company name'''
+    cached_name = check_company_cache(symbol)
+    if cached_name:
+        company_name = cached_name
+    else:
+        company_name = get_company_name(symbol)
+
+    if company_name == 'N/A':
+        await bot.say('Unable to resolve stock ticker: ' + symbol)
+    else:
+        await bot.say(company_name)
 
 @bot.command(pass_context=True)
 async def echo(ctx):
