@@ -165,6 +165,29 @@ async def quote(ctx, symbol:str):
     await bot.say(get_company_name(symbol)) #TODO: get_company_name moved into plotting func
 
 @bot.command()
+async def price(symbol:str, cache_override='nope'):
+    '''!price [TICKER] returns 'last' and 'change_prct' of stock'''
+    cache_override_bool = False
+    if cache_override.lower() == 'please':
+        cache_override_bool = True
+    lookup_start = datetime.now()
+    company_name = get_company_name(symbol, cache_override_bool)
+
+    if company_name == 'N/A':
+        await bot.say('Unable to resolve stock ticker: ' + symbol)
+        return
+    else:
+        price_data = web.get_quote_yahoo([symbol])
+        #await bot.say(price_data[0])
+        await bot.say(
+            '`$' + symbol.upper() + '`\t' + company_name +
+            '\n$' + str(price_data.get_value(symbol, 'last')) +
+            '\t' + str(price_data.get_value(symbol, 'change_pct')) +
+            '\t@' + str(price_data.get_value(symbol, 'time')) +
+            '\nPE ' + str(price_data.get_value(symbol, 'PE')) +
+            '\tshort_ratio ' + str(price_data.get_value(symbol, 'short_ratio'))
+        )
+@bot.command()
 async def who(symbol:str, cache_override='nope'):
     '''!who [TICKER] returns company name'''
     cache_override_bool = False
