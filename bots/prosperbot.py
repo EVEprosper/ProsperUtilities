@@ -69,7 +69,7 @@ async def quote(ctx, symbol:str):
     try:
         data = get_stock_data(symbol)
     except Exception as err_message:
-        logger.warning('Invalid stock ticker: ' + symbol)
+        LOGGER.warning('Invalid stock ticker: ' + symbol)
         await bot.say('Unable to resolve stock ticker: ' + symbol)
 
     await bot.say(get_company_name(symbol))
