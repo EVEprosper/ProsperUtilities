@@ -165,7 +165,7 @@ async def quote(ctx, symbol:str):
     await bot.say(get_company_name(symbol)) #TODO: get_company_name moved into plotting func
 
 @bot.command()
-async def who(symbol:str, cache_override:str):
+async def who(symbol:str, cache_override='nope'):
     '''!who [TICKER] returns company name'''
     cache_override_bool = False
     if cache_override.lower() == 'please':
