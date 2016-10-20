@@ -24,6 +24,7 @@ LOGGER = create_logger(
 TICKER_FORMAT = CONFIG.get('PD_DATAREADER', 'ticker_format')
 TICKER_LOOKUP = CONFIG.get('PD_DATAREADER', 'ticker_lookup')
 def get_company_name(ticker, ticker_format=TICKER_FORMAT):
+    '''Resolve TICKER->company name for easy readability'''
     ticker_url = '{base_url}?s={ticker}&f={ticker_format}'.format(
         base_url=TICKER_LOOKUP,
         ticker=ticker,
@@ -35,6 +36,7 @@ def get_company_name(ticker, ticker_format=TICKER_FORMAT):
 QUOTE_SOURCE = CONFIG.get('PD_DATAREADER', 'quote_source')
 DATERANGE = CONFIG.get('PD_DATAREADER', 'DATERANGE')
 def get_stock_data(ticker, quote_source=QUOTE_SOURCE, daterange=DATERANGE):
+    '''fetch OHLC data for plotting'''
     start_date = datetime.today() - timedelta(days=int(daterange))
     end_date = datetime.today()
 
@@ -52,6 +54,18 @@ def get_stock_data(ticker, quote_source=QUOTE_SOURCE, daterange=DATERANGE):
 
     return stock_data
 
+PNG_HEIGHT = CONFIG.get('PD_DATAREADER', 'png_height')
+PNG_WIDTH  = CONFIG.get('PD_DATAREADER', 'png_width')
+def make_plot(data, ticker, filepath, png_height=PNG_HEIGHT, png_width=PNG_WIDTH):
+    '''make a plot of the OHLC data'''
+    company_name = get_company_name(ticker)
+    pass
+
+def get_plot(ticker, filepath=None):
+    '''check to see if file is already generated'''
+    #TODO: tinyDB records of plots on file
+    return None
+
 bot = commands.Bot(
     command_prefix=CONFIG.get('OAUTH', 'bot_prefix'),
     description='ProsperBot is BESTBOT'
@@ -66,13 +80,19 @@ async def on_ready():
 
 @bot.command(pass_context=True)
 async def quote(ctx, symbol:str):
+    plot_file = get_plot(symbol)
+    if get_plot:
+        #if cached, return plot ezpz
+        await bot.upload(plot_file)
     try:
         data = get_stock_data(symbol)
     except Exception as err_message:
         LOGGER.warning('Invalid stock ticker: ' + symbol)
         await bot.say('Unable to resolve stock ticker: ' + symbol)
         return
-    await bot.say(get_company_name(symbol))
+
+
+    await bot.say(get_company_name(symbol)) #TODO: get_company_name moved into plotting func
 
 @bot.command(pass_context=True)
 async def echo(ctx):
