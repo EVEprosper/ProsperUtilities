@@ -2,7 +2,10 @@
 from os import path, makedirs
 from datetime import datetime, timedelta
 
-#import requests
+import requests
+import demjson
+import nltk
+import nltk.sentiment as sentiment
 import pandas as pd
 import pandas_datareader.data as web
 import discord
@@ -12,6 +15,7 @@ import ujson as json
 
 from prosper.common.prosper_logging import create_logger
 from prosper.common.prosper_config import get_config
+
 
 HERE = path.abspath(path.dirname(__file__))
 CONFIG_ABSPATH = path.join(HERE, 'prosperbot_config.cfg')
@@ -25,6 +29,12 @@ LOGGER = create_logger(
 CACHE_ABSPATH = path.join(HERE, CONFIG.get('CACHE', 'cache_path'))
 if not path.exists(CACHE_ABSPATH):
     makedirs(CACHE_ABSPATH)
+
+DO_TEXT_ANALYSIS = True
+if not nltk.download('vader_lexicon'):
+    DO_TEXT_ANALYSIS = False
+    LOGGER.error('unable to load vader_lexicon for text analysis')
+
 def update_cache(db, insertobj, query_field):
     '''single func for updating tinydb cache'''
     u_query = Query()
