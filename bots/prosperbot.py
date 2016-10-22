@@ -38,6 +38,7 @@ else:
 
 TOP_ENTRIES = int(CONFIG.get('PD_DATAREADER', 'articles_top_entries'))
 ARTICLES_URI = CONFIG.get('PD_DATAREADER', 'articles_uri')
+ARTICLES_EXCLUDE = CONFIG.get('PD_DATAREADER', 'articles_exclude').split(',')
 def get_news(ticker:str, percent:float, top_entries=TOP_ENTRIES):
     '''fetch google news and return most relevant entry
         NOTE: using nltk sentiment analysis on headlines
@@ -68,6 +69,9 @@ def get_news(ticker:str, percent:float, top_entries=TOP_ENTRIES):
         if 'a' in block:
             for article in block['a']:
                 LOGGER.debug(article)
+                if article['s'] in ARTICLES_EXCLUDE:
+                    LOGGER.debug('-- skipping because of source')
+                    continue
                 headline = article['t']
                 url = article['u']
                 article_dict[headline] = url
