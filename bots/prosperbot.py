@@ -59,9 +59,11 @@ def get_news(ticker:str, percent:float, top_entries=TOP_ENTRIES):
     ## Pick a few articles off the endpoint ##
     article_dict = {} #headline_str:url_str
     for block in articles['clusters']:
-        LOGGER.debug(block)
+        #LOGGER.debug(block)
         if int(block['id']) == -1:
-            LOGGER.debug('--found end of list')
+            LOGGER.debug(
+                '-- found end of list ' + str(len(article_dict)) + ' hits'
+            )
             continue
         if 'a' in block:
             for article in block['a']:
@@ -71,6 +73,9 @@ def get_news(ticker:str, percent:float, top_entries=TOP_ENTRIES):
                 article_dict[headline] = url
 
                 if len(article_dict) >= TOP_ENTRIES:
+                    LOGGER.debug(
+                        '-- enough entries' + str(len(article_dict)) + ' hits'
+                    )
                     break
 
     ## Grade the headlines gathered ##
@@ -93,7 +98,12 @@ def get_news(ticker:str, percent:float, top_entries=TOP_ENTRIES):
             best_score = score_obj['compound']
             best_headline = headline
             best_url = url
-
+    LOGGER.debug(
+        'results' +
+        '\r\tbest_headline={0}'.format(best_headline) +
+        '\r\tbest_url={0}'.format(best_url) +
+        '\r\tbest_score={0}'.format(best_score)
+    )
     result_str = best_url + '\t(' + str(best_score) + ')'
     return result_str
 
