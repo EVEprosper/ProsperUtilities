@@ -18,6 +18,7 @@ TODO: setup.py?
 * [ProsperCommon](https://github.com/EVEprosper/ProsperCommon) for logging/config
 
 **Running ProsperBot**
+
 1. `virtualenv -p python3 venv_prosperbot`
 2. activate virtualenv
 3. `pip install -r bot_requirements.txt`
