@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 import requests
 import demjson
-import nltk
+from nltk import download as nltk_download
 import nltk.sentiment as sentiment
 import pandas as pd
 import pandas_datareader.data as web
@@ -30,10 +30,72 @@ CACHE_ABSPATH = path.join(HERE, CONFIG.get('CACHE', 'cache_path'))
 if not path.exists(CACHE_ABSPATH):
     makedirs(CACHE_ABSPATH)
 
-DO_TEXT_ANALYSIS = True
-if not nltk.download('vader_lexicon'):
-    DO_TEXT_ANALYSIS = False
+TEXT_ANALYZER = None
+if not nltk_download('vader_lexicon'):
     LOGGER.error('unable to load vader_lexicon for text analysis')
+else:
+    TEXT_ANALYZER = sentiment.vader.SentimentIntensityAnalyzer()
+
+TOP_ENTRIES = int(CONFIG.get('PD_DATAREADER', 'articles_top_entries'))
+ARTICLES_URI = CONFIG.get('PD_DATAREADER', 'articles_uri')
+def get_news(ticker:str, percent:float, top_entries=TOP_ENTRIES):
+    '''fetch google news and return most relevant entry
+        NOTE: using nltk sentiment analysis on headlines
+    '''
+    if not TEXT_ANALYZER:
+        return 'Sentiment analyzer broken, ask again later'
+    ## Get relevant articles from google finance endpoint ##
+    params = {
+        'q':ticker,
+        'output':'json'
+    }
+
+    req = requests.get(
+        ARTICLES_URI,
+        params=params
+    )
+    articles = demjson.decode(req.text) #fix poorly formatted result
+
+    ## Pick a few articles off the endpoint ##
+    article_dict = {} #headline_str:url_str
+    for block in articles['clusters']:
+        LOGGER.debug(block)
+        if int(block['id']) == -1:
+            LOGGER.debug('--found end of list')
+            continue
+        if 'a' in block:
+            for article in block['a']:
+                LOGGER.debug(article)
+                headline = article['t']
+                url = article['u']
+                article_dict[headline] = url
+
+                if len(article_dict) >= TOP_ENTRIES:
+                    break
+
+    ## Grade the headlines gathered ##
+    positive = True
+    if percent < 0:
+        positive = False
+    best_headline = ''
+    best_url = ''
+    best_score = 0.0
+    for headline, url in article_dict.items():
+        score_obj = TEXT_ANALYZER.polarity_scores(headline)
+        bool_update = False
+        if positive and score_obj['compound'] > best_score:
+            bool_update = True
+        elif (not positive) and score_obj['compound'] < best_score:
+            bool_update = True
+
+        if bool_update:
+            #ties go to first entry in items() list
+            best_score = score_obj['compound']
+            best_headline = headline
+            best_url = url
+
+    result_str = best_url + '\t(' + str(best_score) + ')'
+    return result_str
 
 def update_cache(db, insertobj, query_field):
     '''single func for updating tinydb cache'''
@@ -188,6 +250,9 @@ async def price(symbol:str, cache_override='nope'):
         return
     else:
         price_data = web.get_quote_yahoo([symbol])
+        percent = str(price_data.get_value(symbol, 'change_pct'))
+        percent = float(percent.replace('%',''))
+        news_url = get_news(symbol, percent)
         #await bot.say(price_data[0])
         await bot.say(
             '`$' + symbol.upper() + '`\t' + company_name +
@@ -195,7 +260,8 @@ async def price(symbol:str, cache_override='nope'):
             '\t' + str(price_data.get_value(symbol, 'change_pct')) +
             '\t@' + str(price_data.get_value(symbol, 'time')) +
             '\nPE ' + str(price_data.get_value(symbol, 'PE')) +
-            '\tshort_ratio ' + str(price_data.get_value(symbol, 'short_ratio'))
+            '\tshort_ratio ' + str(price_data.get_value(symbol, 'short_ratio')) +
+            '\n' + news_url
         )
 @bot.command()
 async def who(symbol:str, cache_override='nope'):
