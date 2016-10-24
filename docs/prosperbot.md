@@ -39,9 +39,9 @@ ProsperBot comes with a wide array of functions using the `discord.ext` library
 To clear/refresh the cache, use the keyword `please` in your request and the company name will be fetched again on the yahoo endpoint.
 
 ## !price [ticker] [please (OPTIONAL)]
-`!quote` returns a summary of the current price of a stock.  This endpoint is furnished by yahoo through `pandas_datareader.data.get_quote_yahoo` function
+`!price` returns a summary of the current price of a stock.  This endpoint is furnished by yahoo through `pandas_datareader.data.get_quote_yahoo` function
 
-`!quote` also hits the following sub functions directly:
+`!price` also hits the following sub functions directly:
 * `!who` for company name (`get_company_name`)
 * `!news` for "most relevant article" (`get_news`)
 
