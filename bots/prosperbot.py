@@ -59,7 +59,7 @@ def get_news(ticker:str, percent:float, top_entries=TOP_ENTRIES):
     try:
         articles = demjson.decode(req.text) #fix poorly formatted result
     except Exception as error_msg:
-        LOGGER.error(
+        LOGGER.warning(
             'Unable to parse news list' +
             '\r\texception={0}'.format(error_msg) +
             '\r\turl={0}'.format(req.url) +
