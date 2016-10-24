@@ -1,3 +1,4 @@
+--extra-index-url https://pypi.fury.io/jyd5j4yse83c9UW64tP7/lockefox/
 aiohttp==1.0.5
 async-timeout==1.0.0
 chardet==2.3.0
@@ -15,8 +16,7 @@ numpy==1.11.2
 oauthlib==2.0.0
 pandas==0.19.0
 pandas-datareader==0.2.1
--e git+git@github.com:EVEprosper/ProsperCommon.git@e3213d06334ca9507661b754ec444f486ee84542#egg=ProsperCommon
-python-dateutil==2.5.3
+ProsperCommon==0.2.1
 pytz==2016.7
 requests==2.11.1
 requests-file==1.4.1
