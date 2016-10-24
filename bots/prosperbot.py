@@ -56,8 +56,16 @@ def get_news(ticker:str, percent:float, top_entries=TOP_ENTRIES):
         ARTICLES_URI,
         params=params
     )
-    articles = demjson.decode(req.text) #fix poorly formatted result
-
+    try:
+        articles = demjson.decode(req.text) #fix poorly formatted result
+    except Exception as error_msg:
+        LOGGER.error(
+            'Unable to parse news list' +
+            '\r\texception={0}'.format(error_msg) +
+            '\r\turl={0}'.format(req.url) +
+            '\r\ttext={0}'.format(req.text)
+        )
+        return 'Bad article feed :('
     ## Pick a few articles off the endpoint ##
     article_dict = {} #headline_str:url_str
     for block in articles['clusters']:
