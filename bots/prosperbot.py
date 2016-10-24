@@ -39,6 +39,7 @@ else:
 TOP_ENTRIES = int(CONFIG.get('PD_DATAREADER', 'articles_top_entries'))
 ARTICLES_URI = CONFIG.get('PD_DATAREADER', 'articles_uri')
 ARTICLES_EXCLUDE = CONFIG.get('PD_DATAREADER', 'articles_exclude').split(',')
+ARTICLES_ABS_FLAG = float(CONFIG.get('PD_DATAREADER', 'articles_abs_flag'))
 def get_news(ticker:str, percent:float, top_entries=TOP_ENTRIES):
     '''fetch google news and return most relevant entry
         NOTE: using nltk sentiment analysis on headlines
@@ -84,18 +85,28 @@ def get_news(ticker:str, percent:float, top_entries=TOP_ENTRIES):
 
     ## Grade the headlines gathered ##
     positive = True
+    neutral = False
     if percent < 0:
         positive = False
+    elif percent == 0.0:
+        neutral = True
     best_headline = ''
     best_url = ''
     best_score = 0.0
     for headline, url in article_dict.items():
         score_obj = TEXT_ANALYZER.polarity_scores(headline)
+        headline_score = score_obj['compound']
         bool_update = False
-        if positive and score_obj['compound'] > best_score:
+        if positive and headline_score > best_score:
             bool_update = True
-        elif (not positive) and score_obj['compound'] < best_score:
+        elif (not positive) and headline_score < best_score:
             bool_update = True
+
+        #allow for "strongest" score to win in neutral case
+        if neutral and abs(headline_score) > best_score:
+            bool_update = True
+        elif neutral:
+            bool_update = False
 
         if bool_update:
             #ties go to first entry in items() list
@@ -277,6 +288,28 @@ async def price(symbol:str, cache_override='nope'):
             '\tshort_ratio ' + str(price_data.get_value(symbol, 'short_ratio')) +
             '\n' + news_url
         )
+
+@bot.command()
+async def news(symbol:str, *args):
+    cache_override = False
+    sentiment_override = 0.0
+    for key in args:
+        if key.lower() == 'please':
+            cache_override = True
+
+        if '+' in key:
+            sentiment_override = 5.0
+        elif '-' in key:
+            sentiment_override = -5.0
+
+    company_name = get_company_name(symbol, cache_override)
+    if company_name == 'N/A':
+        await bot.say('Unable to resolve stock ticker: ' + symbol)
+        return
+    else:
+        await bot.say(get_news(symbol, sentiment_override))
+
+
 @bot.command()
 async def who(symbol:str, cache_override='nope'):
     '''!who [TICKER] returns company name'''
