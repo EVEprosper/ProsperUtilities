@@ -342,4 +342,12 @@ async def echo(ctx):
     await bot.say('echo: {0}'.format(ctx.message.content))
 
 BOT_TOKEN = CONFIG.get('OAUTH', 'bot_token')
-bot.run(BOT_TOKEN)
+if __name__ == '__main__':
+    try:
+        bot.run(BOT_TOKEN)
+    except Exception as error_msg:
+        LOGGER.critical(
+            'prosperbot exiting unexpectedly' +
+            '\r\texception={0}'.format(error_msg)
+        )
+    LOGGER.warning('prosperbot exiting without reason')
