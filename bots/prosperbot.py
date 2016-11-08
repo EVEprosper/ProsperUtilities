@@ -13,19 +13,28 @@ from discord.ext import commands
 from tinydb import TinyDB, Query
 import ujson as json
 
-from prosper.common.prosper_logging import create_logger
+#from prosper.common.prosper_logging import create_logger
+import prosper.common.prosper_logging as p_log
 from prosper.common.prosper_config import get_config
 
 
 HERE = path.abspath(path.dirname(__file__))
 CONFIG_ABSPATH = path.join(HERE, 'prosperbot_config.cfg')
 CONFIG = get_config(CONFIG_ABSPATH)
-LOGGER = create_logger(
+LOGBUILDER = p_log.ProsperLogger(
     'prosperbot',
     '.',
-    CONFIG,
-    'DEBUG'
+    CONFIG
 )
+LOGBUILDER.configure_debug_logger()
+LOGBUILDER.configure_discord_logger()
+LOGGER = LOGBUILDER.get_logger()
+#LOGGER = create_logger(
+#    'prosperbot',
+#    '.',
+#    CONFIG,
+#    'DEBUG'
+#)
 CACHE_ABSPATH = path.join(HERE, CONFIG.get('CACHE', 'cache_path'))
 if not path.exists(CACHE_ABSPATH):
     makedirs(CACHE_ABSPATH)
