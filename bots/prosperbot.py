@@ -357,6 +357,6 @@ if __name__ == '__main__':
     except Exception as error_msg:
         LOGGER.critical(
             'prosperbot exiting unexpectedly' +
-            '\r\texception={0}'.format(error_msg)
+            '\r\texception={0}'.format(str(error_msg))
         )
     LOGGER.warning('prosperbot exiting without reason')
