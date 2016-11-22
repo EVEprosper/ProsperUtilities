@@ -70,9 +70,9 @@ def get_news(ticker:str, percent:float, top_entries=TOP_ENTRIES):
     except Exception as error_msg:
         LOGGER.warning(
             'Unable to parse news list' +
-            '\r\texception={0}'.format(error_msg) +
             '\r\turl={0}'.format(req.url) +
-            '\r\ttext={0}'.format(req.text)
+            '\r\ttext={0}'.format(req.text),
+            exc_info=True
         )
         return 'Bad article feed :('
     ## Pick a few articles off the endpoint ##
@@ -148,9 +148,9 @@ def update_cache(db, insertobj, query_field):
     except Exception as err_message:
         LOGGER.error(
             'EXCEPTION: unable to update tinydb ' +
-            '\r\texception={0}'.format(err_message) +
             '\r\tinsertobj={0}'.format(insertobj) +
-            '\r\tquery_field={0}'.format(query_field)
+            '\r\tquery_field={0}'.format(query_field),
+            exc_info=True
         )
 
 COMPANY_CACHE_TIME = int(CONFIG.get('CACHE', 'company_cache_time')) * 3600 #seconds
@@ -356,7 +356,7 @@ if __name__ == '__main__':
         bot.run(BOT_TOKEN)
     except Exception as error_msg:
         LOGGER.critical(
-            'prosperbot exiting unexpectedly' +
-            '\r\texception={0}'.format(str(error_msg))
+            'prosperbot exiting unexpectedly',
+            exc_info=True
         )
     LOGGER.warning('prosperbot exiting without reason')
