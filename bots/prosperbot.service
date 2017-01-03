@@ -1,0 +1,16 @@
+[Unit]
+Description=ProsperBot - A Discord chat robot
+After=multi-user.target
+
+[Service]
+TimeoutStartSec=30
+Type=simple
+WorkingDirectory=/home/prosper/ProsperUtilities/bots
+ExecStart=/home/prosper/ProsperUtilities/venv_bot/bin/python /home/prosper/ProsperUtilities/bots/prosperbot.py
+StandardOutput=syslog
+StadardError=syslog
+User=prosper
+User=root
+
+[Install]
+WantedBy=multi-user.target
