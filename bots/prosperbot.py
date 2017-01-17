@@ -86,7 +86,7 @@ def get_news(ticker:str, percent:float, top_entries=TOP_ENTRIES):
             continue
         if 'a' in block:
             for article in block['a']:
-                LOGGER.debug(article)
+                #LOGGER.debug(article)
                 if article['s'] in ARTICLES_EXCLUDE:
                     LOGGER.debug('-- skipping because of source')
                     continue
@@ -114,6 +114,9 @@ def get_news(ticker:str, percent:float, top_entries=TOP_ENTRIES):
         score_obj = TEXT_ANALYZER.polarity_scores(headline)
         headline_score = score_obj['compound']
         bool_update = False
+        LOGGER.debug(
+            '%.4f' % headline_score + ' : ' + headline
+        )
         if positive and headline_score > best_score:
             bool_update = True
         elif (not positive) and headline_score < best_score:
