@@ -88,17 +88,14 @@ def get_news(ticker:str, percent:float, top_entries=TOP_ENTRIES):
             for article in block['a']:
                 #LOGGER.debug(article)
                 if article['s'] in ARTICLES_EXCLUDE:
-                    LOGGER.debug('-- skipping because of source')
+                    LOGGER.debug(
+                        '-- skipping source:' +
+                        article['t'] + ' @ ' + article['s']
+                    )
                     continue
                 headline = article['t']
                 url = article['u']
                 article_dict[headline] = url
-
-                if len(article_dict) >= TOP_ENTRIES:
-                    LOGGER.debug(
-                        '-- enough entries' + str(len(article_dict)) + ' hits'
-                    )
-                    break
 
     ## Grade the headlines gathered ##
     positive = True
