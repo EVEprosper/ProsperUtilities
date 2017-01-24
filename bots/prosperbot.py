@@ -134,9 +134,9 @@ def get_news(ticker:str, percent:float, top_entries=TOP_ENTRIES):
             best_url = url
     LOGGER.debug(
         'results' +
-        '\r\tbest_headline={0}'.format(best_headline) +
-        '\r\tbest_url={0}'.format(best_url) +
-        '\r\tbest_score={0}'.format(best_score)
+        '\n\tbest_headline={0}'.format(best_headline) +
+        '\n\tbest_url={0}'.format(best_url) +
+        '\n\tbest_score={0}'.format(best_score)
     )
     result_str = best_url + '\t(' + str(best_score) + ')'
     return result_str
@@ -150,8 +150,8 @@ def update_cache(db, insertobj, query_field):
     except Exception as err_message:
         LOGGER.error(
             'EXCEPTION: unable to update tinydb ' +
-            '\r\tinsertobj={0}'.format(insertobj) +
-            '\r\tquery_field={0}'.format(query_field),
+            '\n\tinsertobj={0}'.format(insertobj) +
+            '\n\tquery_field={0}'.format(query_field),
             exc_info=True
         )
 
@@ -229,10 +229,10 @@ def get_stock_data(ticker, quote_source=QUOTE_SOURCE, daterange=DATERANGE):
     try:
         LOGGER.info('Fetching data for: ' + str(ticker))
         LOGGER.debug(
-            '\r\tticker={0}'.format(ticker) +
-            '\r\tquote_source={0}'.format(ticker) +
-            '\r\tstart_date={0}'.format(start_date) +
-            '\r\tend_date={0}'.format(end_date)
+            '\n\tticker={0}'.format(ticker) +
+            '\n\tquote_source={0}'.format(ticker) +
+            '\n\tstart_date={0}'.format(start_date) +
+            '\n\tend_date={0}'.format(end_date)
         )
         stock_data = web.DataReader(ticker, quote_source, start_date, end_date)
     except Exception as err_message:
