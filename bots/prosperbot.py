@@ -12,6 +12,7 @@ import discord
 from discord.ext import commands
 from tinydb import TinyDB, Query
 import ujson as json
+from six.moves.html_parser import HTMLParser
 
 #from prosper.common.prosper_logging import create_logger
 import prosper.common.prosper_logging as p_log
@@ -76,6 +77,7 @@ def get_news(ticker:str, percent:float, top_entries=TOP_ENTRIES):
         )
         return 'Bad article feed :('
     ## Pick a few articles off the endpoint ##
+    parser = HTMLParser()
     article_dict = {} #headline_str:url_str
     for block in articles['clusters']:
         #LOGGER.debug(block)
@@ -93,7 +95,7 @@ def get_news(ticker:str, percent:float, top_entries=TOP_ENTRIES):
                         article['t'] + ' @ ' + article['s']
                     )
                     continue
-                headline = article['t']
+                headline = parser.unescape(article['t'])
                 url = article['u']
                 article_dict[headline] = url
 
