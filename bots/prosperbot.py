@@ -15,12 +15,12 @@ import ujson as json
 
 #from prosper.common.prosper_logging import create_logger
 import prosper.common.prosper_logging as p_log
-from prosper.common.prosper_config import get_config
+from prosper.common.prosper_config import ProsperConfig
 
 
 HERE = path.abspath(path.dirname(__file__))
 CONFIG_ABSPATH = path.join(HERE, 'prosperbot_config.cfg')
-CONFIG = get_config(CONFIG_ABSPATH)
+CONFIG = ProsperConfig(CONFIG_ABSPATH)
 LOGBUILDER = p_log.ProsperLogger(
     'prosperbot',
     '.',
